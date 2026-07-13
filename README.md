@@ -1,18 +1,18 @@
 # Stock Management System - C
 
-A robust inventory management system built in C, featuring object-oriented design patterns with structures and pointers for efficient stock tracking and organization.
+A comprehensive inventory management system built in C, featuring object-oriented design patterns with structures and pointers for efficient stock tracking and organization.
 
 ## 📋 Overview
 
-This project implements a comprehensive stock management application using C programming language. It leverages structures and pointers to create a maintainable, scalable inventory system capable of handling product tracking, stock levels, and related operations.
+This project implements a robust stock management application using C programming language. It leverages structures and pointers to create a maintainable, scalable inventory system capable of handling product tracking, stock levels, and related operations.
 
 ## ✨ Features
 
 - **Product Management**: Create, update, and delete product entries
 - **Stock Tracking**: Monitor inventory levels and stock availability
-- **Data Persistence**: Store and retrieve stock information
+- **Modular Design**: Organized function definitions and headers
 - **Efficient Memory Management**: Utilizes pointers for dynamic memory allocation
-- **Structured Design**: Object-oriented approach using C structures
+- **Structured Programming**: Object-oriented approach using C structures
 
 ## 🛠️ Technology Stack
 
@@ -23,11 +23,21 @@ This project implements a comprehensive stock management application using C pro
 ## 📦 Project Structure
 
 ```
-├── src/              # Source code files
-├── include/          # Header files
-├── data/             # Data files (if applicable)
-└── README.md         # Project documentation
+├── README.md                    # Project documentation
+├── codes                        # Main program logic
+├── fonction_definition.c        # Function implementations
+├── fonction_for_main.h          # Function declarations for main
+└── gestion_de_stock.h           # Stock management header definitions
 ```
+
+## 📄 File Descriptions
+
+| File | Purpose |
+|------|---------|
+| `codes` | Main program entry point and application logic |
+| `fonction_definition.c` | Implementation of stock management functions |
+| `fonction_for_main.h` | Header file with function prototypes for main |
+| `gestion_de_stock.h` | Core data structures and type definitions |
 
 ## 🚀 Getting Started
 
@@ -39,7 +49,7 @@ This project implements a comprehensive stock management application using C pro
 ### Compilation
 
 ```bash
-gcc -o stock_manager *.c
+gcc -o stock_manager codes fonction_definition.c
 ```
 
 ### Usage
@@ -50,7 +60,7 @@ gcc -o stock_manager *.c
 
 ## 💾 Data Management
 
-The system uses file-based storage to persist inventory data, allowing for consistent stock records across sessions.
+The system provides comprehensive stock management capabilities with persistent data handling through structured C programming techniques.
 
 ## 📝 License
 
