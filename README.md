@@ -10,6 +10,7 @@ This project implements a robust stock management application using C programmin
 
 - **Product Management**: Create, update, and delete product entries
 - **Stock Tracking**: Monitor inventory levels and stock availability
+- **Sorting Capabilities**: Sort products alphabetically, by price, and by quantity
 - **Modular Design**: Organized function definitions and headers
 - **Efficient Memory Management**: Utilizes pointers for dynamic memory allocation
 - **Structured Programming**: Object-oriented approach using C structures
@@ -24,20 +25,22 @@ This project implements a robust stock management application using C programmin
 
 ```
 ├── README.md                    # Project documentation
-├── codes                        # Main program logic
+├── codes                        # Main program entry point
 ├── fonction_definition.c        # Function implementations
 ├── fonction_for_main.h          # Function declarations for main
-└── gestion_de_stock.h           # Stock management header definitions
+├── gestion_de_stock.h           # Stock management header definitions
+└── projet.h                     # Core project header
 ```
 
 ## 📄 File Descriptions
 
 | File | Purpose |
 |------|---------|
-| `codes` | Main program entry point and application logic |
+| `codes` | Main program entry point with application logic |
 | `fonction_definition.c` | Implementation of stock management functions |
-| `fonction_for_main.h` | Header file with function prototypes for main |
-| `gestion_de_stock.h` | Core data structures and type definitions |
+| `fonction_for_main.h` | Header file with function prototypes |
+| `gestion_de_stock.h` | Stock management structures and definitions |
+| `projet.h` | Core project header and type definitions |
 
 ## 🚀 Getting Started
 
@@ -49,26 +52,29 @@ This project implements a robust stock management application using C programmin
 ### Compilation
 
 ```bash
-gcc -o stock_manager codes fonction_definition.c
+gcc -o gestion_stock codes fonction_definition.c
 ```
 
 ### Usage
 
 ```bash
-./stock_manager
+./gestion_stock
 ```
 
-## 💾 Data Management
+## 💾 Features Overview
 
-The system provides comprehensive stock management capabilities with persistent data handling through structured C programming techniques.
+- **Alphabetical Sorting**: Sort products by name
+- **Price Sorting**: Sort products in ascending or descending order by price
+- **Quantity Tracking**: Monitor available stock quantities
+- **Dynamic Memory Management**: Efficient use of linked lists with pointers
 
 ## 📝 License
 
 This project is provided as-is for educational and personal use.
 
-## 👤 Author
+## 👤 Authors
 
-**tedjelmoulksn-dotcom**
+**Dahmoun Sarah** | **Sinacer Tedj El Moulk**
 
 ---
 
