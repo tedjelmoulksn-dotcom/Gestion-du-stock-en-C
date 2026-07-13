@@ -29,7 +29,6 @@ This project implements a robust stock management application using C programmin
 ├── fonction_definition.c        # Function implementations
 ├── fonction_for_main.h          # Function declarations for main
 ├── gestion_de_stock.h           # Stock management header definitions
-└── projet.h                     # Core project header
 ```
 
 ## 📄 File Descriptions
@@ -40,7 +39,6 @@ This project implements a robust stock management application using C programmin
 | `fonction_definition.c` | Implementation of stock management functions |
 | `fonction_for_main.h` | Header file with function prototypes |
 | `gestion_de_stock.h` | Stock management structures and definitions |
-| `projet.h` | Core project header and type definitions |
 
 ## 🚀 Getting Started
 
@@ -73,8 +71,7 @@ gcc -o gestion_stock codes fonction_definition.c
 This project is provided as-is for educational and personal use.
 
 ## 👤 Authors
-
-**Dahmoun Sarah** | **Sinacer Tedj El Moulk**
+**Sinacer Tedj El Moulk**
 
 ---
 
