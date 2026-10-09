@@ -1,6 +1,10 @@
 # C Inventory Structures — Pointers and Memory Management
 
-An academic C project using an inventory example to explore dynamic allocation, doubly linked data structures, pointer-based sorting and list reconstruction.
+C inventory exercise exploring heap allocation, doubly linked lists and pointer-based sorting.
+
+![Node addresses are reordered; product payloads stay in place.](assets/project-overview.svg)
+
+*Node addresses are reordered; product payloads stay in place.*
 
 **C · Heap Allocation · Structs · Pointer Indirection · Linked Lists · Function Pointers · qsort**
 
