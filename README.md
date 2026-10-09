@@ -1,14 +1,12 @@
 # C Inventory Structures — Pointers and Memory Management
 
-C inventory exercise exploring heap allocation, doubly linked lists and pointer-based sorting.
+C inventory exercise implementing checked heap allocation, doubly linked lists and pointer-based sorting.
 
 ![Node addresses are reordered; product payloads stay in place.](assets/project-overview.svg)
 
-*Node addresses are reordered; product payloads stay in place.*
+**C11 · Heap Allocation · Structs · Pointer Indirection · Linked Lists · Function Pointers · qsort**
 
-**C · Heap Allocation · Structs · Pointer Indirection · Linked Lists · Function Pointers · qsort**
-
-The technical focus is the representation and manipulation of data in memory. Product names, prices and quantities provide the application context for implementing the underlying structures.
+Sorting changes the order of node addresses and rebuilds their links; product records retain their storage locations. Memory ownership, pointer indirection and list invariants are the core engineering topics.
 
 ## Project Overview
 
@@ -16,240 +14,142 @@ The technical focus is the representation and manipulation of data in memory. Pr
 |---|---|
 | Context | First-year Instrumentation engineering coursework |
 | Authors | Tedj El Moulk Sinacer and Sarah Dahmoun |
-| Execution model | Hosted C console application using the standard library |
-| Demonstration | One category with two dynamically allocated product nodes |
-| Implemented operations | Display; alphabetical, price and quantity sorting |
-| Repository status | Historical source requiring build and type-consistency corrections |
+| Execution model | Hosted C console application |
+| Demo | Two products in one category |
+| Operations | Checked insertion, display, four sorting orders and cleanup |
+| Build | C11 compiler and Make |
 
-The code demonstrates skills relevant to embedded C: understanding object lifetime, memory ownership, pointer aliasing, bounded storage and type-safe interfaces. It has no microcontroller target, peripheral driver, RTOS integration or measured real-time guarantees.
+The project develops C skills relevant to embedded software through a standard host application.
 
 ## Technical Scope
 
-- Define records using `struct` and `typedef`.
-- Allocate a list descriptor and nodes with `malloc()`.
-- Link nodes using `next` and `previous` pointers.
-- Maintain explicit `first` and `last` endpoints.
-- Traverse a linked structure through pointer dereferencing.
-- Create a temporary array of pointers to existing nodes.
-- Pass comparison callbacks to `qsort()`.
-- Rebuild list links in the selected order without copying entire product records.
-
-The fixed example keeps attention on node allocation, pointer sorting and relinking. Category/product fields supply the input data for these operations.
+The implementation uses tagged self-referential structures, checked heap allocation, reciprocal node links and function-pointer comparison callbacks. It preserves node identity during sorting and provides an explicit ownership lifecycle.
 
 ## Data Model
 
-| Type | Contents | Role |
-|---|---|---|
-| `PRODUIT` | Name array, `float` price, `int` quantity | Product payload |
-| `NODE_P` | Product payload and two link pointers | Intended doubly linked product node |
-| `LISTE_P` | First and last node pointers | Product-list descriptor |
-| `CATEGORIE` | Name array and product-list pointer | Category record |
-| `NODE_C`, `LISTE_C` | Category-node and list definitions | Declared category-list structures; unused by the example |
+| Type | Contents |
+|---|---|
+| `PRODUIT` | Name, float price and integer quantity |
+| `NODE_P` | Product payload, next and previous pointers |
+| `LISTE_P` | First and last node pointers |
+| `CATEGORIE` | Category name and borrowed list-descriptor pointer |
+| `NODE_C`, `LISTE_C` | Retained category-list declarations |
 
-The headers use `SIZE = 200` for the fixed name arrays. The implementation separately defines `SIZE = 500` for the temporary sorting array. These represent different capacities and should use distinct names.
+`STOCK_NAME_CAPACITY = 200` includes the null terminator. Insertion rejects names longer than 199 bytes, negative quantities, negative prices and nonfinite prices.
 
 ### Memory Layout and Ownership
 
-The example allocates:
+The demo owns its list descriptor on the stack. `stock_add()` allocates nodes owned by the list; `stock_clear()` releases them and nulls both endpoints. The category borrows the descriptor pointer.
 
-- one `LISTE_P` descriptor on the heap;
-- two `NODE_P` objects on the heap.
-
-The category and initialization records are local variables in `main()`. Product fields are copied into the allocated nodes; the category holds a pointer to the allocated list.
-
-Pointers in the temporary sorting array alias the original nodes. Sorting changes the order of those pointers and subsequent link assignments; it does not relocate or reallocate the nodes.
-
-Actual object sizes depend on integer/pointer widths, alignment and padding. Use `sizeof` in the selected build to establish the descriptor, node and temporary-array footprint.
+Sorting temporarily allocates `n * sizeof(NODE_P *)` bytes. The array aliases the original nodes and is released after relinking. Allocation failure returns `false` before changing the list. Every caller checks the result and follows a cleanup path.
 
 ## Allocation and Link Initialization
 
-The demonstration creates a category named `fruits`, with `Banane` and `Orange` records. It manually initializes the list:
+```c
+LISTE_P products = {NULL, NULL};
+CATEGORIE fruits = {"fruits", &products};
+if (!stock_add(&products, "Banana", 1.25f, 200)) {
+    /* Handle failure; the list is unchanged. */
+}
+/* Use the list, then release its nodes. */
+stock_clear(&products);
+```
 
-1. Allocate the descriptor and set its endpoints to `NULL`.
-2. Allocate the first node and copy its product fields.
-3. Set both endpoints to the first node.
-4. Allocate the second node.
-5. Link the first node forward to the second and the second backward to the first.
-6. Update the last-node pointer.
-
-The example makes allocation and linking explicit. To complete that lifecycle, check each allocation before dereferencing it and release every node and descriptor through a defined cleanup path.
+Appending establishes both the new backward link and the previous endpoint's forward link. Cleanup also accepts an empty list.
 
 ## Pointer-Based Sorting
 
 ### Algorithm Used by the Source
 
-Each sorting function follows the same broad sequence:
+1. Count nodes and check the temporary-array size.
+2. Allocate an array of node addresses.
+3. Sort with `qsort()` and the requested comparison callback.
+4. Reverse the pointer order for a descending sort.
+5. Rebuild both links of every node and update both endpoints.
+6. Release the pointer array.
 
-1. Traverse the product list to count nodes.
-2. Traverse again and store node addresses in a local pointer array.
-3. Sort that array using `qsort()`.
-4. Assign the list endpoints from the sorted array.
-5. Reconnect neighbouring nodes.
-6. Print the reordered list.
+Empty and singleton lists are successful no-op cases. Equal-key nodes may have either relative order; sorting is not guaranteed to be stable.
 
-| Function | Intended order |
+| Function | Order |
 |---|---|
-| `tri_alphabetique()` | Product name, ascending |
-| `tri_prix_croissant()` | Price, ascending |
-| `tri_prix_decroissant()` | Price, descending |
-| `tri_quantite_dispo()` | Quantity, descending |
+| `tri_alphabetique()` | Name ascending |
+| `tri_prix_croissant()` | Price ascending |
+| `tri_prix_decroissant()` | Price descending |
+| `tri_quantite_dispo()` | Quantity descending |
 
-The descending functions reverse the sorted pointer order when rebuilding the links.
+All sorting functions accept `CATEGORIE *` and return `bool`. Display is separate from sorting.
 
 ### Comparator Indirection
 
-The array contains `NODE_P *` elements. A `qsort` callback receives the address of an array element through `const void *`, requiring an additional level of indirection to recover the node pointer.
-
-The source uses:
-
-```c
-NODE_P *produitA = *(NODE_P **)a;
-NODE_P *produitB = *(NODE_P **)b;
-```
-
-The name comparator then calls `strcmp()`; the quantity comparator explicitly returns a negative value, zero or a positive value.
-
-A const-aware expression for a future cleanup would be:
+Each array element is a `NODE_P *`; the callback receives the address of that pointer:
 
 ```c
 const NODE_P *product = *(NODE_P * const *)element;
 ```
 
-This is explanatory guidance, not a modification to the stored source.
-
 ### Price Comparator
 
-The current price comparator returns a floating-point subtraction through an `int` return type. Small nonzero differences can become zero after conversion, giving an incorrect ordering.
-
-An illustrative replacement is:
+Relational comparison preserves fractional differences:
 
 ```c
 return (price_a > price_b) - (price_a < price_b);
 ```
 
-Input-domain rules would also need to define how invalid floating-point values are handled. For monetary data, a documented integer smallest-unit representation is another possible design choice.
+Prices remain floats for this coursework exercise. The insertion API restricts the domain to finite, nonnegative values. Monetary accounting would require its own rounding and representation policy.
 
 ## List Invariants
 
-A correct doubly linked implementation should preserve:
-
-| Condition | Expected invariant |
+| Condition | Invariant |
 |---|---|
-| Empty list | `first == NULL` and `last == NULL` |
+| Empty list | Both endpoints are null |
 | Nonempty list | `first->previous == NULL` |
 | Nonempty list | `last->next == NULL` |
-| Forward neighbour exists | `node->next->previous == node` |
-| Backward neighbour exists | `node->previous->next == node` |
+| Forward neighbour | `node->next->previous == node` |
+| Backward neighbour | `node->previous->next == node` |
 
-The ascending sorting routines do not explicitly clear the new first node's `previous` link. The forward order may appear correct while the backward chain retains a stale link.
-
-The type declarations also need repair: the node typedefs are anonymous, while their link members refer to `struct _NODE_P` and `struct _NODE_C`. Those tags do not identify the anonymous typedef objects.
-
-The intended product-node declaration would be:
-
-```c
-typedef struct _NODE_P {
-    PRODUIT produit;
-    struct _NODE_P *next;
-    struct _NODE_P *previous;
-} NODE_P;
-```
-
-This illustrates the required self-referential type relationship.
+Regression tests traverse both directions and retain an original node address across repeated sorts.
 
 ## Resource and Embedded-C Considerations
 
-| Mechanism | Engineering consideration |
-|---|---|
-| Dynamic node allocation | Allocation failure, allocator overhead and explicit ownership must be handled |
-| Linked traversal | Access follows pointers; storage is not contiguous |
-| Local pointer array | Fixed stack capacity must be checked before filling it |
-| Standard-library sorting | Timing and auxiliary-memory behaviour depend on the library implementation |
-| Fixed name arrays | Copy operations need length constraints and null-termination guarantees |
-| In-place relinking | Every endpoint and neighbour relationship must remain consistent |
-| Console output | Standard I/O is part of this hosted demonstration, not a peripheral abstraction |
+Collection and relinking are linear passes. Sorting behaviour depends on the library's `qsort()` implementation. The temporary allocation is sized from the node count with an overflow check.
 
-The temporary array reserves 500 pointers regardless of the actual list size: its array storage alone is `500 × sizeof(NODE_P *)` bytes. Its usable capacity is not enforced in the source.
-
-There are two linear passes before sorting and one linear relinking pass afterward. The total sort cost also depends on the platform's `qsort()` implementation; no portable worst-case timing or real-time bound is asserted.
-
-A microcontroller adaptation could evaluate statically allocated nodes or a fixed-capacity pool, with explicit failure handling. That adaptation is a proposed direction, not an existing feature.
+The API assumes a well-formed, acyclic list built through its insertion operation. Direct structure modifications must preserve the same invariants. A microcontroller adaptation could use a fixed-capacity pool in place of the host heap.
 
 ## Repository Structure
 
-| File | Contents |
+| Path | Contents |
 |---|---|
-| [`codes`](codes) | Main function and sample-list initialization; filename has no `.c` extension |
-| [`fonction definition.c`](fonction%20definition.c) | Display, comparator and sorting implementations |
-| [`fonction_for_main.h`](fonction_for_main.h) | Structures and function declarations |
-| [`gestion_de_stock.h`](gestion_de_stock.h) | Near-duplicate structures and declarations |
-| `README.md` | Technical overview and implementation review |
+| [include/gestion_de_stock.h](include/gestion_de_stock.h) | Canonical types, ownership rules and API |
+| [src/main.c](src/main.c) | Runnable demonstration |
+| [src/stock.c](src/stock.c) | Insertion, cleanup, display and sorting |
+| [tests/test_stock.c](tests/test_stock.c) | Regression tests and allocation-failure injection |
+| [Makefile](Makefile) | Build, test and sanitizer commands |
 
-French identifiers are retained in the documentation to match the historical source.
+The former `codes`, `fonction definition.c` and duplicate root headers are consolidated into this layout. Coursework API names remain consistent across declarations, implementation and tests.
 
-## Build Status
-
-The previous README's compile command does not build the stored project as-is.
-
-Current blockers include:
-
-- both source files include `projet.h`, which is absent;
-- the main source is stored as `codes`, without a C extension;
-- the header declares `tri_alphabetique(CATEGORIE)`, but its implementation expects `CATEGORIE *`;
-- the call in `main()` passes the category by value;
-- node-link types are inconsistent with their typedefs;
-- `SIZE` is reused for different capacities.
-
-### Recommended Restoration
-
-1. Choose one canonical header and repair the self-referential node tags.
-2. Update source includes to use that header.
-3. Align the alphabetical-sort declaration, implementation and call.
-4. Rename `codes` to `main.c`, or explicitly select the C input language.
-5. Replace ambiguous capacity macros with separately named constants.
-6. Add allocation checks, cleanup and list-boundary handling.
-
-After those corrections, a suggested warning-enabled GCC build would be:
+## Build and Run
 
 ```bash
-gcc -std=c11 -Wall -Wextra -Wpedantic -g \
-    main.c "fonction definition.c" -o inventory_demo
+git clone https://github.com/tedjelmoulksn-dotcom/Gestion-du-stock-en-C.git
+cd Gestion-du-stock-en-C
+make
+./build/inventory_demo
+make test
+make sanitize
 ```
 
-Use this command after applying the source-layout and API corrections listed above. Compiler diagnostics then provide the first check of type consistency before exercising the list operations.
+Tests use GNU-compatible linker wrapping to inject allocation failures without changing production code. The sanitizer target enables AddressSanitizer and UndefinedBehaviorSanitizer.
 
 ## Implementation Review
 
-| Finding | Consequence | Proposed correction |
-|---|---|---|
-| Missing header and inconsistent API | Build failure | Consolidate one header and match function signatures |
-| Anonymous node types with unrelated struct tags | Incompatible pointer types | Use tagged self-referential structures |
-| Unchecked `malloc()` | Possible null-pointer dereference | Return an explicit allocation error |
-| No `free()` cleanup | Incomplete ownership lifecycle | Release nodes and list descriptor |
-| Unbounded `strcpy()` | Generalized inputs could exceed name capacity | Define checked copy and length rules |
-| Empty-list assumptions | Printing and sorting can dereference invalid data | Handle zero and one-node cases explicitly |
-| Unchecked 500-element sorting buffer | Larger lists can overwrite stack storage | Enforce capacity or choose another algorithm |
-| Stale backward endpoint after ascending sort | Doubly linked invariants can fail | Clear the new first node's backward link |
-| Floating-point subtraction returned as `int` | Distinct prices may compare equal | Use relational comparisons |
-| Repeated sorting implementations | Fixes need to be duplicated | Factor out pointer collection and relinking |
+One canonical header, correctly tagged node types and matching signatures make the project buildable. Count-based sorting allocation replaces the fixed 500-pointer buffer. Shared relinking logic maintains both endpoints, and cleanup completes memory ownership.
 
-## Suggested Verification
+## Verification
 
-List validation should inspect both traversal directions after every reorder. A correct forward printout alone is insufficient: endpoint null links, reciprocal neighbour links and deallocation must remain consistent for the data structure to be reusable.
-
-A future validation pass should cover:
-
-- empty, singleton and multi-node lists;
-- duplicate names and equal prices;
-- fractional price differences;
-- capacity boundaries and allocation failures;
-- forward/backward consistency after repeated sorts;
-- complete deallocation.
-
-On a compatible host, compiler warnings and memory diagnostics such as AddressSanitizer and UndefinedBehaviorSanitizer can support that work. Inspect diagnostics together with the list invariants and allocation/release paths.
+Tests cover empty, singleton and multi-node lists; duplicate keys; fractional prices; invalid input; allocation failures; repeated sorting; and a 600-node list. Allocation accounting verifies complete release of the tested node and sort-array allocations.
 
 ## Authors and Licensing
 
 Developed by **Tedj El Moulk Sinacer** and **Sarah Dahmoun**.
 
-No explicit project licence is included in the repository.
+No explicit project licence is included.
