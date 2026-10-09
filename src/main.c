@@ -1,31 +1,29 @@
-/* Original coursework: Sarah Dahmoun and Tedj El Moulk Sinacer. */
-#include "gestion_de_stock.h"
+/* Dahmoun sarah     Sinacer Tedj el moulk             INSTRU 1*/
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+#include "projet.h"
 
-int main(void)
+
+int main(int argc, char* argv[])
 {
-    LISTE_P products = {NULL, NULL};
-    CATEGORIE fruits = {"fruits", &products};
-    int result = EXIT_FAILURE;
-    if (!stock_add(&products, "Banana", 1.25f, 200) ||
-        !stock_add(&products, "Orange", 1.10f, 900)) goto cleanup;
 
-    puts("Alphabetical order:");
-    if (!tri_alphabetique(&fruits)) goto cleanup;
-    print_produits(fruits);
-    puts("Price ascending:");
-    if (!tri_prix_croissant(&fruits)) goto cleanup;
-    print_produits(fruits);
-    puts("Price descending:");
-    if (!tri_prix_decroissant(&fruits)) goto cleanup;
-    print_produits(fruits);
-    puts("Quantity descending:");
-    if (!tri_quantite_dispo(&fruits)) goto cleanup;
-    print_produits(fruits);
-    result = EXIT_SUCCESS;
-cleanup:
-    stock_clear(&products);
-    if (result != EXIT_SUCCESS) fputs("Inventory operation failed.\n", stderr);
-    return result;
+	setlocale(LC_ALL, ""); /*Permet d'utiliser strcoll configurer en Français */
+
+	LISTE_C* stock = (LISTE_C*)malloc(sizeof(LISTE_C));
+	stock->first = NULL;
+	stock->last = NULL;
+	
+	chargerStock(stock, argv[1]);
+	gestion_stock(stock);
+	saveStock(stock, argv[1]);
+
+
+	return EXIT_SUCCESS;
 }
+
+
+
