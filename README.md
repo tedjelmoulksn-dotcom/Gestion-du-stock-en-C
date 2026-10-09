@@ -30,7 +30,7 @@ The code demonstrates skills relevant to embedded C: understanding object lifeti
 - Pass comparison callbacks to `qsort()`.
 - Rebuild list links in the selected order without copying entire product records.
 
-The preserved program initializes a fixed example. It does not provide an interactive CRUD interface, persistent storage or general-purpose insertion/deletion functions.
+The fixed example keeps attention on node allocation, pointer sorting and relinking. Category/product fields supply the input data for these operations.
 
 ## Data Model
 
@@ -55,7 +55,7 @@ The category and initialization records are local variables in `main()`. Product
 
 Pointers in the temporary sorting array alias the original nodes. Sorting changes the order of those pointers and subsequent link assignments; it does not relocate or reallocate the nodes.
 
-Actual object sizes depend on the compiler's integer and pointer widths, alignment and structure padding. No fixed RAM footprint is claimed.
+Actual object sizes depend on integer/pointer widths, alignment and padding. Use `sizeof` in the selected build to establish the descriptor, node and temporary-array footprint.
 
 ## Allocation and Link Initialization
 
@@ -68,7 +68,7 @@ The demonstration creates a category named `fruits`, with `Banane` and `Orange` 
 5. Link the first node forward to the second and the second backward to the first.
 6. Update the last-node pointer.
 
-The source does not check allocation failures and does not release the allocated objects before returning from `main()`. It illustrates allocation and linking, but does not yet implement a complete memory-lifecycle API.
+The example makes allocation and linking explicit. To complete that lifecycle, check each allocation before dereferencing it and release every node and descriptor through a defined cleanup path.
 
 ## Pointer-Based Sorting
 
@@ -212,7 +212,7 @@ gcc -std=c11 -Wall -Wextra -Wpedantic -g \
     main.c "fonction definition.c" -o inventory_demo
 ```
 
-This is a proposed command for a repaired source layout. It has not been executed against the current repository, and no successful-build claim is made.
+Use this command after applying the source-layout and API corrections listed above. Compiler diagnostics then provide the first check of type consistency before exercising the list operations.
 
 ## Implementation Review
 
@@ -231,6 +231,8 @@ This is a proposed command for a repaired source layout. It has not been execute
 
 ## Suggested Verification
 
+List validation should inspect both traversal directions after every reorder. A correct forward printout alone is insufficient: endpoint null links, reciprocal neighbour links and deallocation must remain consistent for the data structure to be reusable.
+
 A future validation pass should cover:
 
 - empty, singleton and multi-node lists;
@@ -240,7 +242,7 @@ A future validation pass should cover:
 - forward/backward consistency after repeated sorts;
 - complete deallocation.
 
-On a compatible host, compiler warnings and memory diagnostics such as AddressSanitizer and UndefinedBehaviorSanitizer can support that work. No test suite or sanitizer results are present in this repository.
+On a compatible host, compiler warnings and memory diagnostics such as AddressSanitizer and UndefinedBehaviorSanitizer can support that work. Inspect diagnostics together with the list invariants and allocation/release paths.
 
 ## Authors and Licensing
 
