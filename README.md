@@ -1,28 +1,27 @@
-# Inventory Management in C
+# Stock Management in C
 
-Academic inventory application using doubly linked lists to organise categories and products. It supports editing, sorting and CSV persistence.
+A console inventory-management project using linked data structures to organize products and categories, load stock records and save updates to a file.
 
 ## Repository guide
 
-| Location | Contents |
-|---|---|
-| [src/](src/) | Application entry point, original implementation and stock library |
-| [include/](include/) | Stock-library public interface |
-| [tests/](tests/) | Stock-library tests |
-| [docs/](docs/) | Project presentation |
-| [versions_intermediaires/](versions_intermediaires/) | Earlier development snapshots |
+| Path | Role |
+| --- | --- |
+| [src/main.c](src/main.c) | Original command-line application entry point |
+| [src/projet.c](src/projet.c) and [src/projet.h](src/projet.h) | Course application and linked-list operations |
+| [src/stock.c](src/stock.c) and [include](include/) | Separate stock-library implementation |
+| [tests](tests/) | Stock-library tests |
+| [docs](docs/) | Project presentation |
 
-## Getting started
+The original application and the stock library are two implementation paths. Their APIs are different; combining the application entry point with the library does not produce a valid application build.
 
-The current application entry point uses `projet.c`:
+## Work with the project
 
-```bash
-gcc src/main.c src/projet.c -o gestion_stock
-./gestion_stock path/to/stock.csv
+Inspect `main.c` and `projet.h` to follow the original application's load, interactive management and save sequence. The application expects an input filename as its command-line argument.
+
+For the separate library, use:
+
+```sh
+make test
 ```
 
-Supply an existing CSV file in `category;product;price;quantity;` format. The stock library and its tests are a separate implementation; the current Makefile application target needs reconciliation with the uploaded entry point.
-
-## Project context
-
-Developed with Sarah Dahmoun at Sup Galilée. Earlier snapshots are kept separately to preserve the development history.
+The existing application target in the Makefile needs reconciliation with the original entry point before it can be advertised as a working build command. Library tests do not establish that the interactive application builds or behaves correctly.
