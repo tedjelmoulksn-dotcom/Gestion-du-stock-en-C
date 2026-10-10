@@ -2,6 +2,10 @@
 
 A console inventory-management project using linked data structures to organize products and categories, load stock records and save updates to a file.
 
+![Gestion-du-stock-en-C project overview](assets/project-overview.svg)
+
+*Data-structure overview for the pointer-based inventory-sorting implementation.*
+
 ## Repository guide
 
 | Path | Role |
